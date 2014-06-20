@@ -1,0 +1,14 @@
+[
+	{
+		"caption": "toggleKatakana: Hello World",
+		"command": "example"
+	},
+	{
+		"caption": "toggleKatakana: convert to Multibyte Katakana",
+		"command": "convert_to_multibyte"
+	},
+	{
+		"caption": "toggleKatakana: convert to Singlebyte Katakana",
+		"command": "convert_to_singlebyte"
+	}
+]
