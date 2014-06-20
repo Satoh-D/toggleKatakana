@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sublime, sublime_plugin, string
 
+# 全角: 半角対応辞書
 dict_multiKana = {
 	u'ア': u'ｱ', u'イ': u'ｲ', u'ウ': u'ｳ', u'エ': u'ｴ', u'オ': u'ｵ',
 	u'カ': u'ｶ', u'キ': u'ｷ', u'ク': u'ｸ', u'ケ': u'ｹ', u'コ': u'ｺ',
@@ -21,23 +22,50 @@ dict_multiKana = {
 	u'パ': u'ﾊﾟ', u'ピ': u'ﾋﾟ', u'プ': u'ﾌﾟ', u'ペ': u'ﾍﾟ', u'ポ': u'ﾎﾟ',
 	u'ー': u'ｰ', u'、': u'､', u'。': u'｡', u'「': u'｢', u'」': u'｣'
 }
-dict_singleKana = {
-}
+# 半角: 全角対応辞書
+# dict_multiKanaのハッシュ及びキーの入れ替え版
+# via: http://lightson.dip.jp/zope/ZWiki/120_e3_83_8f_e3_83_83_e3_82_b7_e3_83_a5_e3_81_ae_e3_82_ad_e3_83_bc_e3_81_a8_e5_80_a4_e3_82_92_e5_85_a5_e3_82_8c_e6_9b_bf_e3_81_88_e3_82_8b
+dict_singleKana = dict((value, key) for key, value in dict_multiKana.items())
 str_dakuten = u'ﾞ'
 str_handakuten = u'ﾟ'
 
 
 def convertToSinglebyteKatakana(region):
-	region = region;
 	region = u'%s' % str(region)
 	region = region
 	ret_region = u''
 
 	for char_current in region:
-		if(char_current in dict_multiKana):
+		if char_current in dict_multiKana:
 			ret_region += dict_multiKana[char_current]
 		else:
 			ret_region += char_current
+
+	return ret_region
+
+
+def convertToMultibyteKatakana(region):
+	region = u'%s' % str(region)
+	region = region
+	ret_region = u''
+	char_prev = u''
+
+	for char_current in region:
+		if not char_prev:
+			char_prev = char_current
+			continue
+
+		if char_current == str_dakuten or char_current == str_handakuten:
+			ret_region += dict_singleKana['%s%s' % (char_prev, char_current)]
+			char_prev = u''
+			continue
+
+		if char_prev in dict_singleKana:
+			ret_region += dict_singleKana[char_prev]
+		else:
+			ret_region += char_prev
+
+		char_prev = char_current
 
 	return ret_region
 
@@ -51,9 +79,11 @@ class ConvertToMultibyteCommand(sublime_plugin.TextCommand):
 
 		# select all Region
 		region_all = sublime.Region(0, self.view.size())
-		region_all = self.view.substr(region_all)
+		region_all_str = self.view.substr(region_all)
+		region_all_converted = convertToMultibyteKatakana(region_all_str)
 
-		self.view.insert(edit, self.view.size() - 1, region_all)
+		# self.view.insert(edit, self.view.size() - 1, region_all)
+		self.view.replace(edit, region_all, region_all_converted)
 
 
 class ConvertToSinglebyteCommand(sublime_plugin.TextCommand):
