@@ -31,6 +31,7 @@ HTML文書中でコマンドパレットから__toggleKatakana: convert to Singl
 - カタカナ
 - 句読点
 - 鍵括弧(「, 」)
+- 数値
 
 ## ライセンス
 
